@@ -1,25 +1,92 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">    <!-- Standard -->
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">                              <!-- Standard -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Standard -->
-    <title>新しいイベント作成</title>                    <!-- Custom -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新しいイベント作成</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .date-input {
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .add-date-btn {
+            background-color: #28a745;
+            margin-top: 5px;
+        }
+        .add-date-btn:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 <body>
-<h1>新しいイベントを作成</h1>                        <!-- Custom -->
+<h1>新しいイベントを作成</h1>
 
-<form action="/events" method="post">               <!-- Standard -->
-    <div>
-        <label for="title">イベント名:</label>       <!-- Custom -->
-        <input type="text" id="title" name="title" required> <!-- Standard -->
+<form action="/events" method="post">
+    <div class="form-group">
+        <label for="title">イベント名:</label>
+        <input type="text" id="title" name="title" required
+               placeholder="例：12月忘年会">
     </div>
-    <br>
-    <div>
-        <input type="submit" value="作成する">       <!-- Custom -->
+
+    <div class="form-group">
+        <label>候補日程:</label>
+        <div id="date-inputs">
+            <input type="date" name="candidateDates" class="date-input" required>
+            <input type="date" name="candidateDates" class="date-input">
+        </div>
+        <button type="button" onclick="addDateInput()" class="add-date-btn">
+            候補日を追加
+        </button>
+    </div>
+
+    <div class="form-group">
+        <button type="submit">イベントを作成する</button>
     </div>
 </form>
 
 <br>
-<a href="/events">イベント一覧に戻る</a>             <!-- Custom -->
+<a href="/events">イベント一覧に戻る</a>
+
+<script>
+    function addDateInput() {
+        const dateInputs = document.getElementById('date-inputs');
+        const newInput = document.createElement('input');
+        newInput.type = 'date';
+        newInput.name = 'candidateDates';
+        newInput.className = 'date-input';
+        dateInputs.appendChild(newInput);
+    }
+</script>
 </body>
 </html>

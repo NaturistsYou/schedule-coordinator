@@ -1,44 +1,64 @@
-package NaturistsYou.coordinator;                   // Custom
+package NaturistsYou.coordinator;
 
-import jakarta.persistence.Entity;                  // Standard
-import jakarta.persistence.GeneratedValue;          // Standard
-import jakarta.persistence.GenerationType;          // Standard
-import jakarta.persistence.Id;                      // Standard
-import java.time.LocalDateTime;                     // Standard
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-@Entity                                             // Standard
-public class Event {                                // Custom
+@Entity
+public class Event {
 
-    @Id                                             // Standard
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Standard
-    private Long id;                                // Custom
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private String title;                           // Custom
-    private LocalDateTime createdAt;                // Custom
+    private String title;
+    private LocalDateTime createdAt;
 
-    // コンストラクタ（Standard）
-    public Event() {                                // Custom
+    // 候補日程のリスト（1つのイベントに複数の候補日）
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<EventDate> eventDates = new ArrayList<>();
+
+    // コンストラクタ
+    public Event() {
     }
 
-    public Event(String title) {                    // Custom
-        this.title = title;                         // Custom
-        this.createdAt = LocalDateTime.now();       // Standard
+    public Event(String title) {
+        this.title = title;
+        this.createdAt = LocalDateTime.now();
     }
 
-    // Getter・Setter（Standard）
-    public Long getId() {                           // Custom
-        return id;                                  // Custom
+    // Getter・Setter
+    public Long getId() {
+        return id;
     }
 
-    public String getTitle() {                      // Custom
-        return title;                               // Custom
+    public String getTitle() {
+        return title;
     }
 
-    public void setTitle(String title) {            // Custom
-        this.title = title;                         // Custom
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public LocalDateTime getCreatedAt() {           // Custom
-        return createdAt;                           // Custom
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
+
+    public List<EventDate> getEventDates() {
+        return eventDates;
+    }
+
+    public void setEventDates(List<EventDate> eventDates) {
+        this.eventDates = eventDates;
+    }
+
+    // 候補日を追加するためのヘルパーメソッド
+    public void addEventDate(EventDate eventDate) {
+        eventDates.add(eventDate);
+        eventDate.setEvent(this);
+    }
+
 }

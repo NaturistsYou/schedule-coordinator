@@ -1,19 +1,23 @@
 package NaturistsYou.coordinator;
 
 import org.springframework.web.bind.annotation.GetMapping;
-//import org.springframework.web.bind.annotation.RestController;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
-import java.util.List;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.ui.Model;
 
+import java.time.LocalDate;
+import java.util.List;
 //@RestController
 @Controller
 public class HelloController {
     @Autowired
     private EventRepository eventRepository;
+
+    @Autowired
+    private EventDateRepository eventDateRepository;
 
     @GetMapping("/events")
     @ResponseBody
@@ -44,9 +48,27 @@ public class HelloController {
     }
 
     @PostMapping("/events")                                 // Standard
-    public String createEventFromForm(@RequestParam String title) { // Standard
-        Event event = new Event(title);                    // Custom
-        eventRepository.save(event);                       // Standard
-        return "redirect:/events";                          // Standard - 作成後一覧に戻る
+    public String createEventFromForm(
+            @RequestParam String title,
+            @RequestParam List<String> candidateDates) {
+
+        System.out.println("受信したタイトル：" + title);
+        System.out.println("受信した候補日：" + candidateDates);
+
+//        イベントを作成
+        Event event = new Event(title);
+        Event savedEvent = eventRepository.save(event);
+
+        // 候補日程を保存（空でない日付のみ）
+        for (String dateStr : candidateDates) {
+            if (dateStr != null && !dateStr.trim().isEmpty()) {
+                LocalDate date = LocalDate.parse(dateStr);
+                EventDate eventDate = new EventDate(savedEvent, date);
+                eventDateRepository.save(eventDate);
+            }
+        }
+
+        return "redirect:/events";
+
     }
 }
