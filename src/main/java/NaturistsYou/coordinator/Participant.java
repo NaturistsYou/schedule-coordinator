@@ -3,38 +3,42 @@ package NaturistsYou.coordinator;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 
 @Entity
-public class EventDate {
+public class Participant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // JSON循環参照を防ぐアノテーション追加
+    // どのイベントの参加者かを示す
     @ManyToOne
     @JoinColumn(name = "event_id")
-    @JsonBackReference
+    @JsonBackReference("event-participants")
     private Event event;
 
-    // 候補日（例：2025-07-20）
-    private LocalDate candidateDate;
+    // 参加者名（例：田中太郎）
+    private String name;
 
-    // この候補日への回答リスト
-    @OneToMany(mappedBy = "eventDate", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference("eventdate-responses")
+    // 回答作成日時
+    private LocalDateTime createdAt;
+
+    // この参加者の回答リスト（○×△）
+    @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference("participant-responses")
     private List<Response> responses = new ArrayList<>();
 
     // コンストラクタ
-    public EventDate() {
+    public Participant() {
     }
 
-    public EventDate(Event event, LocalDate candidateDate) {
+    public Participant(Event event, String name) {
         this.event = event;
-        this.candidateDate = candidateDate;
+        this.name = name;
+        this.createdAt = LocalDateTime.now();
     }
 
     // Getter・Setter
@@ -50,12 +54,16 @@ public class EventDate {
         this.event = event;
     }
 
-    public LocalDate getCandidateDate() {
-        return candidateDate;
+    public String getName() {
+        return name;
     }
 
-    public void setCandidateDate(LocalDate candidateDate) {
-        this.candidateDate = candidateDate;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
     public List<Response> getResponses() {
@@ -69,6 +77,6 @@ public class EventDate {
     // 回答を追加するためのヘルパーメソッド
     public void addResponse(Response response) {
         responses.add(response);
-        response.setEventDate(this);
+        response.setParticipant(this);
     }
 }

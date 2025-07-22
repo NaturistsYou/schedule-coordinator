@@ -10,7 +10,7 @@ import org.springframework.ui.Model;
 
 import java.time.LocalDate;
 import java.util.List;
-//@RestController
+
 @Controller
 public class HelloController {
     @Autowired
@@ -19,43 +19,39 @@ public class HelloController {
     @Autowired
     private EventDateRepository eventDateRepository;
 
+    @Autowired
+    private ParticipantRepository participantRepository;
+
+    @Autowired
+    private ResponseRepository responseRepository;
+
     @GetMapping("/events")
     @ResponseBody
     public List<Event> getAllEvents() {
         return eventRepository.findAll();
     }
 
-//    @PostMapping("/events")
-//    public Event createEvent() {
-//        Event event = new Event("テストイベント");
-//        return eventRepository.save(event);
-//    }
     @GetMapping("/")
     @ResponseBody
     public String hello() {
         return "Hello, Schedule App!";
     }
 
-//    @GetMapping("/events/new")                              // Standard
-//    public String showEventForm() {                         // Custom
-//        return "event-form";                                // Custom - event-form.htmlを表示
-//    }
-
     @GetMapping("/events/new")
     public String showEventForm() {
-        System.out.println("showEventForm メソッドが呼ばれました"); // Custom - デバッグ用
+        System.out.println("showEventForm メソッドが呼ばれました");
         return "event-form";
     }
 
-    @PostMapping("/events")                                 // Standard
+    @PostMapping("/events")
     public String createEventFromForm(
-            @RequestParam String title,
-            @RequestParam List<String> candidateDates) {
+            @RequestParam String title,                    // ← カンマを追加
+            @RequestParam List<String> candidateDates) {   // ← 型宣言を修正
 
         System.out.println("受信したタイトル：" + title);
         System.out.println("受信した候補日：" + candidateDates);
 
-//        イベントを作成
+        // イベントを作成
         Event event = new Event(title);
         Event savedEvent = eventRepository.save(event);
 
@@ -69,6 +65,25 @@ public class HelloController {
         }
 
         return "redirect:/events";
+    }
 
+    // テスト用：データベーステーブル確認
+    @GetMapping("/test/tables")
+    @ResponseBody
+    public String testTables() {
+        long eventCount = eventRepository.count();
+        long eventDateCount = eventDateRepository.count();
+        long participantCount = participantRepository.count();
+        long responseCount = responseRepository.count();
+
+        return String.format(
+                "📊 データベーステーブル確認\n" +
+                        "Events: %d 件\n" +
+                        "EventDates: %d 件\n" +
+                        "Participants: %d 件\n" +
+                        "Responses: %d 件\n" +
+                        "✅ 全テーブル正常作成済み",
+                eventCount, eventDateCount, participantCount, responseCount
+        );
     }
 }

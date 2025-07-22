@@ -1,10 +1,10 @@
 package NaturistsYou.coordinator;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 public class Event {
@@ -20,6 +20,11 @@ public class Event {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<EventDate> eventDates = new ArrayList<>();
+
+    // 参加者のリスト（1つのイベントに複数の参加者）
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference("event-participants")
+    private List<Participant> participants = new ArrayList<>();
 
     // コンストラクタ
     public Event() {
@@ -55,10 +60,23 @@ public class Event {
         this.eventDates = eventDates;
     }
 
+    public List<Participant> getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(List<Participant> participants) {
+        this.participants = participants;
+    }
+
     // 候補日を追加するためのヘルパーメソッド
     public void addEventDate(EventDate eventDate) {
         eventDates.add(eventDate);
         eventDate.setEvent(this);
     }
 
+    // 参加者を追加するためのヘルパーメソッド
+    public void addParticipant(Participant participant) {
+        participants.add(participant);
+        participant.setEvent(this);
+    }
 }
