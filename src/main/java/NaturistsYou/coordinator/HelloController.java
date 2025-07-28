@@ -6,10 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Comparator;
+import java.util.Optional;
 
 @Controller
 public class HelloController {
@@ -71,6 +76,27 @@ public class HelloController {
         }
 
         return "redirect:/events";
+    }
+
+    @GetMapping("/events/{id}")
+    public String showEventDetail(@PathVariable Long id, Model model) {
+        // データベースからIDに基づいてイベントを検索
+        Optional<Event> eventOpt = eventRepository.findById(id);
+        
+        // イベントが存在しない場合は404エラーを投げる
+        if (eventOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "イベントが見つかりません");
+        }
+        
+        // イベントを取得
+        Event event = eventOpt.get();
+        
+        // 候補日程を日付順でソート（早い日付から順番に）
+        event.getEventDates().sort(Comparator.comparing(EventDate::getCandidateDate));
+        
+        // テンプレートにイベントデータを渡す
+        model.addAttribute("event", event);
+        return "event-detail";
     }
 
     // テスト用：データベーステーブル確認

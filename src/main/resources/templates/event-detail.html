@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${event.title} + ' - 日程調整アプリ'">イベント詳細 - 日程調整アプリ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .back-link {
+            margin-bottom: 20px;
+        }
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 1.1em;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        .event-info-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .event-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .event-meta {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin: 20px 0 15px 0;
+            border-left: 4px solid #007bff;
+            padding-left: 10px;
+        }
+        .candidate-dates {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .date-item {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .date-item:last-child {
+            margin-bottom: 0;
+        }
+        .date-info {
+            font-weight: bold;
+            color: #333;
+        }
+        .date-day {
+            font-size: 0.9em;
+            color: #666;
+            margin-left: 10px;
+        }
+        .response-summary {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .participants-section {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .no-participants {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 20px;
+        }
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .btn {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #218838;
+        }
+        .btn-primary {
+            background-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .no-dates {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📅 日程調整アプリ</h1>
+        <p>イベント詳細</p>
+    </div>
+
+    <div class="back-link">
+        <a href="/events">← イベント一覧に戻る</a>
+    </div>
+
+    <div class="event-info-card">
+        <div class="event-title" th:text="${event.title}">イベント名</div>
+        
+        <div class="event-meta">
+            <strong>📅 作成日:</strong> 
+            <span th:text="${#temporals.format(event.createdAt, 'yyyy年MM月dd日 HH:mm')}">2025-07-28 10:00</span>
+        </div>
+        
+        <div class="event-meta">
+            <strong>👥 参加者数:</strong> 
+            <span th:text="${event.participants.size()}">0</span>人
+        </div>
+        
+        <div class="event-meta">
+            <strong>📋 候補日程数:</strong> 
+            <span th:text="${event.eventDates.size()}">0</span>件
+        </div>
+    </div>
+
+    <!-- 候補日程セクション -->
+    <div class="candidate-dates">
+        <div class="section-title">🗓️ 候補日程</div>
+        
+        <div th:if="${event.eventDates.empty}" class="no-dates">
+            まだ候補日程が設定されていません
+        </div>
+        
+        <div th:if="${!event.eventDates.empty}">
+            <div th:each="eventDate : ${event.eventDates}" class="date-item">
+                <div>
+                    <span class="date-info" th:text="${#temporals.format(eventDate.candidateDate, 'yyyy年MM月dd日')}">2025年07月29日</span>
+                    <span class="date-day" th:text="'(' + ${#temporals.format(eventDate.candidateDate, 'E')} + ')'">（月）</span>
+                </div>
+                <div class="response-summary">
+                    <!-- 将来的に回答状況を表示する場所 -->
+                    <span style="color: #999;">回答待ち</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 参加者セクション -->
+    <div class="participants-section">
+        <div class="section-title">👥 参加者</div>
+        
+        <div th:if="${event.participants.empty}" class="no-participants">
+            📭 まだ参加者がいません
+            <br><br>
+            <small>参加者が登録されると、ここに表示されます。</small>
+        </div>
+        
+        <div th:if="${!event.participants.empty}">
+            <!-- 将来的に参加者一覧を表示する場所 -->
+            <div th:each="participant : ${event.participants}">
+                <span th:text="${participant.name}">参加者名</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- アクションボタン -->
+    <div class="actions">
+        <a th:href="@{/events/{id}/participate(id=${event.id})}" class="btn">
+            ✋ このイベントに参加する
+        </a>
+        <a href="/events" class="btn btn-primary">
+            📋 イベント一覧に戻る
+        </a>
+    </div>
+</body>
+</html>
