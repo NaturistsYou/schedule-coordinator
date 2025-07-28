@@ -99,6 +99,51 @@ public class HelloController {
         return "event-detail";
     }
 
+    @GetMapping("/events/{id}/participate")
+    public String showParticipateForm(@PathVariable Long id, Model model) {
+        // データベースからIDに基づいてイベントを検索
+        Optional<Event> eventOpt = eventRepository.findById(id);
+        
+        // イベントが存在しない場合は404エラーを投げる
+        if (eventOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "イベントが見つかりません");
+        }
+        
+        // イベントを取得
+        Event event = eventOpt.get();
+        
+        // 候補日程を日付順でソート
+        event.getEventDates().sort(Comparator.comparing(EventDate::getCandidateDate));
+        
+        // テンプレートにイベントデータを渡す
+        model.addAttribute("event", event);
+        return "participate-form";
+    }
+
+    @PostMapping("/events/{id}/participate")
+    public String processParticipation(@PathVariable Long id, 
+                                     @RequestParam String participantName) {
+        // データベースからIDに基づいてイベントを検索
+        Optional<Event> eventOpt = eventRepository.findById(id);
+        
+        // イベントが存在しない場合は404エラーを投げる
+        if (eventOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "イベントが見つかりません");
+        }
+        
+        // イベントを取得
+        Event event = eventOpt.get();
+        
+        // 新しい参加者を作成（Eventが最初、nameが2番目の順序）
+        Participant participant = new Participant(event, participantName);
+        
+        // データベースに保存
+        participantRepository.save(participant);
+        
+        // イベント詳細画面にリダイレクト
+        return "redirect:/events/" + id;
+    }
+
     // テスト用：データベーステーブル確認
     @GetMapping("/test/tables")
     @ResponseBody
