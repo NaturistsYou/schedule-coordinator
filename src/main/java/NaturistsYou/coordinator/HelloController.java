@@ -26,15 +26,21 @@ public class HelloController {
     private ResponseRepository responseRepository;
 
     @GetMapping("/events")
+    public String showEventList(Model model) {
+        List<Event> events = eventRepository.findAll();
+        model.addAttribute("events", events);
+        return "event-list";
+    }
+
+    @GetMapping("/api/events")
     @ResponseBody
-    public List<Event> getAllEvents() {
+    public List<Event> getAllEventsJson() {
         return eventRepository.findAll();
     }
 
     @GetMapping("/")
-    @ResponseBody
-    public String hello() {
-        return "Hello, Schedule App!";
+    public String home() {
+        return "redirect:/events";
     }
 
     @GetMapping("/events/new")

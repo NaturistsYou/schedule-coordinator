@@ -1,0 +1,12 @@
+{
+  "language": "ja",
+  "preferences": {
+    "communication_language": "japanese",
+    "yes_no_questions": "japanese",
+    "error_messages": "japanese",
+    "explanations": "japanese"
+  },
+  "project_settings": {
+    "documentation_output_path": "/Users/tatsunoriyusa/work/local obsidian/dev obsidian"
+  }
+}
