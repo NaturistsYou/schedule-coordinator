@@ -140,6 +140,70 @@
             font-style: italic;
             padding: 20px;
         }
+        .participant-item {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .participant-item:last-child {
+            margin-bottom: 0;
+        }
+        .participant-info {
+            flex-grow: 1;
+        }
+        .participant-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .participant-meta {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .participant-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.9em;
+        }
+        .btn-response {
+            background-color: #17a2b8;
+        }
+        .btn-response:hover {
+            background-color: #138496;
+        }
+        .response-status {
+            font-size: 0.8em;
+        }
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .status-badge.pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .status-badge.completed {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-badge.partial {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #99d6ff;
+        }
     </style>
 </head>
 <body>
@@ -204,9 +268,30 @@
         </div>
         
         <div th:if="${!event.participants.empty}">
-            <!-- 将来的に参加者一覧を表示する場所 -->
-            <div th:each="participant : ${event.participants}">
-                <span th:text="${participant.name}">参加者名</span>
+            <div th:each="participant : ${event.participants}" class="participant-item">
+                <div class="participant-info">
+                    <div class="participant-name">
+                        👤 <span th:text="${participant.name}">参加者名</span>
+                    </div>
+                    <div class="participant-meta">
+                        <small th:text="'登録日: ' + ${#temporals.format(participant.createdAt, 'MM月dd日 HH:mm')}">
+                            登録日: 07月28日 15:30
+                        </small>
+                    </div>
+                </div>
+                <div class="participant-actions">
+                    <a th:href="@{/events/{eventId}/participants/{participantId}/responses(eventId=${event.id}, participantId=${participant.id})}" 
+                       class="btn btn-small btn-response">
+                        📝 日程回答
+                    </a>
+                    <div class="response-status">
+                        <span th:with="status=${participantResponseStatus[participant.id]}"
+                              th:class="'status-badge ' + ${status.statusClass}"
+                              th:text="${status.statusText}">
+                            回答待ち
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

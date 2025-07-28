@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'日程回答 - ' + ${event.title} + ' - 日程調整アプリ'">日程回答 - 日程調整アプリ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .back-link {
+            margin-bottom: 20px;
+        }
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 1.1em;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        .participant-info {
+            background-color: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .participant-name {
+            font-weight: bold;
+            color: #1976d2;
+            font-size: 1.1em;
+        }
+        .event-info-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .event-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .form-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+            padding-left: 10px;
+        }
+        .date-response-item {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .date-response-item:last-child {
+            margin-bottom: 0;
+        }
+        .date-header {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 8px;
+        }
+        .response-options {
+            margin-bottom: 15px;
+        }
+        .response-option {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+        .response-option input[type="radio"] {
+            margin-right: 5px;
+        }
+        .response-option label {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .response-option label:hover {
+            background-color: #e9ecef;
+        }
+        .response-option input[type="radio"]:checked + label {
+            background-color: #007bff;
+            color: white;
+        }
+        .reason-group {
+            margin-top: 10px;
+        }
+        .reason-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: normal;
+            color: #666;
+        }
+        .reason-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+            box-sizing: border-box;
+            resize: vertical;
+            min-height: 60px;
+        }
+        .reason-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        .help-text {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .btn {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 5px;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #218838;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        .reminder-note {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+        .reminder-note strong {
+            color: #754400;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📅 日程調整アプリ</h1>
+        <p>日程回答フォーム</p>
+    </div>
+
+    <div class="back-link">
+        <a th:href="@{/events/{id}(id=${event.id})}">← イベント詳細に戻る</a>
+    </div>
+
+    <!-- 参加者情報表示 -->
+    <div class="participant-info">
+        <div class="participant-name" th:text="'参加者: ' + ${participant.name}">参加者: 田中太郎</div>
+    </div>
+
+    <!-- イベント情報の表示 -->
+    <div class="event-info-card">
+        <div class="event-title" th:text="${event.title}">イベント名</div>
+        
+        <div>
+            <strong>📅 作成日:</strong> 
+            <span th:text="${#temporals.format(event.createdAt, 'yyyy年MM月dd日 HH:mm')}">2025-07-28 10:00</span>
+        </div>
+    </div>
+
+    <!-- 将来のリマインド機能についての案内 -->
+    <div class="reminder-note">
+        <strong>💡 お知らせ:</strong> 「△（未定）」で回答いただいた場合、決定が近づいたタイミングでリマインド通知をお送りする予定です。
+        理由欄にご事情を記載いただくと、より適切な通知タイミングでご連絡できます。
+    </div>
+
+    <!-- 日程回答フォーム -->
+    <div class="form-card">
+        <div class="form-title">📝 各候補日程への回答</div>
+        
+        <form th:action="@{/events/{eventId}/participants/{participantId}/responses(eventId=${event.id}, participantId=${participant.id})}" method="post">
+            
+            <div th:each="eventDate : ${event.eventDates}" class="date-response-item">
+                <div class="date-header">
+                    📅 <span th:text="${#temporals.format(eventDate.candidateDate, 'yyyy年MM月dd日')}">2025年07月29日</span>
+                    <span th:text="'(' + ${#temporals.format(eventDate.candidateDate, 'E')} + ')'">（月）</span>
+                </div>
+                
+                <div class="response-options">
+                    <div class="response-option">
+                        <input type="radio" 
+                               th:id="'response_' + ${eventDate.id} + '_OK'"
+                               th:name="'response_' + ${eventDate.id}"
+                               th:value="'OK'"
+                               th:checked="${existingResponses != null and existingResponses[eventDate.id] != null and existingResponses[eventDate.id].responseType.name() == 'OK'}">
+                        <label th:for="'response_' + ${eventDate.id} + '_OK'">○ 参加可能</label>
+                    </div>
+                    
+                    <div class="response-option">
+                        <input type="radio" 
+                               th:id="'response_' + ${eventDate.id} + '_NG'"
+                               th:name="'response_' + ${eventDate.id}"
+                               th:value="'NG'"
+                               th:checked="${existingResponses != null and existingResponses[eventDate.id] != null and existingResponses[eventDate.id].responseType.name() == 'NG'}">
+                        <label th:for="'response_' + ${eventDate.id} + '_NG'">× 参加不可</label>
+                    </div>
+                    
+                    <div class="response-option">
+                        <input type="radio" 
+                               th:id="'response_' + ${eventDate.id} + '_MAYBE'"
+                               th:name="'response_' + ${eventDate.id}"
+                               th:value="'MAYBE'"
+                               th:checked="${existingResponses != null and existingResponses[eventDate.id] != null and existingResponses[eventDate.id].responseType.name() == 'MAYBE'}">
+                        <label th:for="'response_' + ${eventDate.id} + '_MAYBE'">△ 微妙</label>
+                    </div>
+                </div>
+                
+                <div class="reason-group">
+                    <label th:for="'reason_' + ${eventDate.id}">理由・コメント（任意）</label>
+                    <textarea th:id="'reason_' + ${eventDate.id}"
+                             th:name="'reason_' + ${eventDate.id}"
+                             class="reason-input"
+                             th:text="${existingResponses != null and existingResponses[eventDate.id] != null ? existingResponses[eventDate.id].reason : ''}"
+                             placeholder="例：この日は仕事の都合がつきそうです / 病院の予約が入るかもしれません"></textarea>
+                    <div class="help-text">
+                        回答理由やご事情があれば記載してください。将来のリマインド機能でも活用されます。
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn">
+                    💾 回答を保存する
+                </button>
+                <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-secondary">
+                    キャンセル
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+        <small style="color: #666;">
+            回答はいつでも変更できます。回答後、イベント詳細画面で全体の回答状況を確認できます。
+        </small>
+    </div>
+</body>
+</html>

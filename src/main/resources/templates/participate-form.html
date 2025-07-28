@@ -97,8 +97,10 @@
         }
         .help-text {
             font-size: 0.9em;
-            color: #666;
-            margin-top: 5px;
+            color: #6c757d;
+            margin-top: 8px;
+            line-height: 1.4;
+            font-style: italic;
         }
         .actions {
             text-align: center;
@@ -138,6 +140,95 @@
             margin-bottom: 5px;
             display: inline-block;
         }
+        .date-response-item {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .date-header {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 8px;
+        }
+        .response-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        .response-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .response-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
+        .response-option label {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .response-option label:hover {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+        .response-option input[type="radio"]:checked + label {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+            box-shadow: 0 2px 4px rgba(0,123,255,0.25);
+        }
+        .reason-group {
+            margin-top: 15px;
+        }
+        .reason-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.95em;
+        }
+        .reason-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            box-sizing: border-box;
+            resize: vertical;
+            min-height: 80px;
+            transition: all 0.3s ease;
+            background-color: #fff;
+        }
+        .reason-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+            background-color: #fdfdfe;
+        }
+        .reason-input::placeholder {
+            color: #6c757d;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -173,11 +264,12 @@
         </div>
     </div>
 
-    <!-- 参加登録フォーム -->
+    <!-- 参加登録＋日程回答フォーム -->
     <div class="form-card">
-        <div class="form-title">✋ 参加登録フォーム</div>
+        <div class="form-title">✋ 参加登録＋日程回答フォーム</div>
         
         <form th:action="@{/events/{id}/participate(id=${event.id})}" method="post">
+            <!-- 参加者名入力 -->
             <div class="form-group">
                 <label for="participantName">
                     参加者名 <span class="required">*</span>
@@ -189,13 +281,64 @@
                        placeholder="例：田中太郎"
                        maxlength="50">
                 <div class="help-text">
-                    ※ 後で日程回答の際に表示される名前です（50文字以内）
+                    ※ 各候補日程への回答と合わせて登録されます（50文字以内）
+                </div>
+            </div>
+
+            <!-- 日程回答セクション -->
+            <div class="form-group" style="margin-top: 30px;">
+                <div class="section-title" style="font-size: 1.1em; font-weight: bold; margin-bottom: 20px; border-left: 4px solid #28a745; padding-left: 10px;">
+                    📝 各候補日程への回答
+                </div>
+                
+                <div th:each="eventDate : ${event.eventDates}" class="date-response-item">
+                    <div class="date-header">
+                        📅 <span th:text="${#temporals.format(eventDate.candidateDate, 'yyyy年MM月dd日')}">2025年07月29日</span>
+                        <span th:text="'(' + ${#temporals.format(eventDate.candidateDate, 'E')} + ')'">（月）</span>
+                    </div>
+                    
+                    <div class="response-options">
+                        <div class="response-option">
+                            <input type="radio" 
+                                   th:id="'response_' + ${eventDate.id} + '_OK'"
+                                   th:name="'response_' + ${eventDate.id}"
+                                   th:value="'OK'">
+                            <label th:for="'response_' + ${eventDate.id} + '_OK'">○ 参加可能</label>
+                        </div>
+                        
+                        <div class="response-option">
+                            <input type="radio" 
+                                   th:id="'response_' + ${eventDate.id} + '_NG'"
+                                   th:name="'response_' + ${eventDate.id}"
+                                   th:value="'NG'">
+                            <label th:for="'response_' + ${eventDate.id} + '_NG'">× 参加不可</label>
+                        </div>
+                        
+                        <div class="response-option">
+                            <input type="radio" 
+                                   th:id="'response_' + ${eventDate.id} + '_MAYBE'"
+                                   th:name="'response_' + ${eventDate.id}"
+                                   th:value="'MAYBE'">
+                            <label th:for="'response_' + ${eventDate.id} + '_MAYBE'">△ 微妙</label>
+                        </div>
+                    </div>
+                    
+                    <div class="reason-group">
+                        <label th:for="'reason_' + ${eventDate.id}">理由・コメント（任意）</label>
+                        <textarea th:id="'reason_' + ${eventDate.id}"
+                                 th:name="'reason_' + ${eventDate.id}"
+                                 class="reason-input"
+                                 placeholder="例：この日は仕事の都合がつきそうです / 病院の予約が入るかもしれません"></textarea>
+                        <div class="help-text">
+                            回答理由やご事情があれば記載してください。
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="actions">
                 <button type="submit" class="btn">
-                    ✅ 参加登録する
+                    💾 参加登録＋回答を完了する
                 </button>
                 <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-secondary">
                     キャンセル
@@ -206,7 +349,7 @@
 
     <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
         <small style="color: #666;">
-            登録後、各候補日程への回答を行えるようになります
+            登録後、イベント詳細画面から回答の変更ができます。回答は後からでも修正可能です。
         </small>
     </div>
 </body>

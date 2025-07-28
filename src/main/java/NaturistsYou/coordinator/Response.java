@@ -30,6 +30,9 @@ public class Response {
     // 回答日時
     private LocalDateTime createdAt;
 
+    // 回答理由（全回答で任意入力可能、将来のリマインド機能で活用）
+    private String reason;
+
     // コンストラクタ
     public Response() {
     }
@@ -38,6 +41,14 @@ public class Response {
         this.participant = participant;
         this.eventDate = eventDate;
         this.responseType = responseType;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public Response(Participant participant, EventDate eventDate, ResponseType responseType, String reason) {
+        this.participant = participant;
+        this.eventDate = eventDate;
+        this.responseType = responseType;
+        this.reason = reason;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -72,6 +83,14 @@ public class Response {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
     // 便利メソッド：回答の記号を取得

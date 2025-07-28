@@ -15,6 +15,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 public class HelloController {
@@ -94,8 +97,16 @@ public class HelloController {
         // 候補日程を日付順でソート（早い日付から順番に）
         event.getEventDates().sort(Comparator.comparing(EventDate::getCandidateDate));
         
+        // 各参加者の回答状況を計算
+        Map<Long, Map<String, Object>> participantResponseStatus = new HashMap<>();
+        for (Participant participant : event.getParticipants()) {
+            Map<String, Object> status = calculateResponseStatus(participant, event);
+            participantResponseStatus.put(participant.getId(), status);
+        }
+        
         // テンプレートにイベントデータを渡す
         model.addAttribute("event", event);
+        model.addAttribute("participantResponseStatus", participantResponseStatus);
         return "event-detail";
     }
 
@@ -122,7 +133,8 @@ public class HelloController {
 
     @PostMapping("/events/{id}/participate")
     public String processParticipation(@PathVariable Long id, 
-                                     @RequestParam String participantName) {
+                                     @RequestParam String participantName,
+                                     HttpServletRequest request) {
         // データベースからIDに基づいてイベントを検索
         Optional<Event> eventOpt = eventRepository.findById(id);
         
@@ -137,11 +149,174 @@ public class HelloController {
         // 新しい参加者を作成（Eventが最初、nameが2番目の順序）
         Participant participant = new Participant(event, participantName);
         
-        // データベースに保存
-        participantRepository.save(participant);
+        // 参加者をデータベースに保存（IDを取得するため）
+        Participant savedParticipant = participantRepository.save(participant);
+        
+        // 各候補日程への回答を処理
+        for (EventDate eventDate : event.getEventDates()) {
+            String responseParam = request.getParameter("response_" + eventDate.getId());
+            String reasonParam = request.getParameter("reason_" + eventDate.getId());
+            
+            // 回答が選択されている場合のみ処理
+            if (responseParam != null && !responseParam.trim().isEmpty()) {
+                ResponseType responseType = ResponseType.valueOf(responseParam);
+                
+                // 新規回答の作成
+                Response response = new Response(savedParticipant, eventDate, responseType, reasonParam);
+                
+                // データベースに保存
+                responseRepository.save(response);
+            }
+        }
         
         // イベント詳細画面にリダイレクト
         return "redirect:/events/" + id;
+    }
+
+    @GetMapping("/events/{eventId}/participants/{participantId}/responses")
+    public String showResponseForm(@PathVariable Long eventId, 
+                                 @PathVariable Long participantId, 
+                                 Model model) {
+        // イベントの存在確認
+        Optional<Event> eventOpt = eventRepository.findById(eventId);
+        if (eventOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "イベントが見つかりません");
+        }
+        
+        // 参加者の存在確認
+        Optional<Participant> participantOpt = participantRepository.findById(participantId);
+        if (participantOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "参加者が見つかりません");
+        }
+        
+        Event event = eventOpt.get();
+        Participant participant = participantOpt.get();
+        
+        // 候補日程を日付順でソート
+        event.getEventDates().sort(Comparator.comparing(EventDate::getCandidateDate));
+        
+        // 既存の回答を取得してマップ化（候補日程ID → 回答）
+        Map<Long, Response> existingResponses = new HashMap<>();
+        for (Response response : participant.getResponses()) {
+            if (response.getEventDate().getEvent().getId().equals(eventId)) {
+                existingResponses.put(response.getEventDate().getId(), response);
+            }
+        }
+        
+        // テンプレートにデータを渡す
+        model.addAttribute("event", event);
+        model.addAttribute("participant", participant);
+        model.addAttribute("existingResponses", existingResponses);
+        
+        return "response-form";
+    }
+
+    @PostMapping("/events/{eventId}/participants/{participantId}/responses")
+    public String processResponses(@PathVariable Long eventId,
+                                 @PathVariable Long participantId,
+                                 HttpServletRequest request) {
+        // イベントと参加者の存在確認
+        Optional<Event> eventOpt = eventRepository.findById(eventId);
+        Optional<Participant> participantOpt = participantRepository.findById(participantId);
+        
+        if (eventOpt.isEmpty() || participantOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "イベントまたは参加者が見つかりません");
+        }
+        
+        Event event = eventOpt.get();
+        Participant participant = participantOpt.get();
+        
+        // 既存の回答を取得
+        Map<Long, Response> existingResponses = new HashMap<>();
+        for (Response response : participant.getResponses()) {
+            if (response.getEventDate().getEvent().getId().equals(eventId)) {
+                existingResponses.put(response.getEventDate().getId(), response);
+            }
+        }
+        
+        // 各候補日程への回答を処理
+        for (EventDate eventDate : event.getEventDates()) {
+            String responseParam = request.getParameter("response_" + eventDate.getId());
+            String reasonParam = request.getParameter("reason_" + eventDate.getId());
+            
+            // 回答が選択されている場合のみ処理
+            if (responseParam != null && !responseParam.trim().isEmpty()) {
+                ResponseType responseType = ResponseType.valueOf(responseParam);
+                
+                // 既存回答があれば更新、なければ新規作成
+                Response response = existingResponses.get(eventDate.getId());
+                if (response != null) {
+                    // 既存回答の更新
+                    response.setResponseType(responseType);
+                    response.setReason(reasonParam != null ? reasonParam.trim() : null);
+                } else {
+                    // 新規回答の作成
+                    response = new Response(participant, eventDate, responseType, reasonParam);
+                }
+                
+                // データベースに保存
+                responseRepository.save(response);
+            }
+        }
+        
+        // イベント詳細画面にリダイレクト
+        return "redirect:/events/" + eventId;
+    }
+
+    // 参加者の回答状況を計算するヘルパーメソッド
+    private Map<String, Object> calculateResponseStatus(Participant participant, Event event) {
+        Map<String, Object> status = new HashMap<>();
+        
+        // このイベントの候補日程数
+        int totalDates = event.getEventDates().size();
+        
+        // この参加者の回答を取得
+        int responseCount = 0;
+        int okCount = 0;
+        int ngCount = 0;
+        int maybeCount = 0;
+        
+        for (Response response : participant.getResponses()) {
+            if (response.getEventDate().getEvent().getId().equals(event.getId())) {
+                responseCount++;
+                switch (response.getResponseType()) {
+                    case OK:
+                        okCount++;
+                        break;
+                    case NG:
+                        ngCount++;
+                        break;
+                    case MAYBE:
+                        maybeCount++;
+                        break;
+                }
+            }
+        }
+        
+        // 回答状況の判定
+        String statusText;
+        String statusClass;
+        
+        if (responseCount == 0) {
+            statusText = "回答待ち";
+            statusClass = "pending";
+        } else if (responseCount == totalDates) {
+            statusText = "回答完了";
+            statusClass = "completed";
+        } else {
+            statusText = responseCount + "/" + totalDates + "件回答";
+            statusClass = "partial";
+        }
+        
+        status.put("statusText", statusText);
+        status.put("statusClass", statusClass);
+        status.put("responseCount", responseCount);
+        status.put("totalDates", totalDates);
+        status.put("okCount", okCount);
+        status.put("ngCount", ngCount);
+        status.put("maybeCount", maybeCount);
+        
+        return status;
     }
 
     // テスト用：データベーステーブル確認
