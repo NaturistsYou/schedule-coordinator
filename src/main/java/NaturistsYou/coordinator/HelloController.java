@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Map;
@@ -104,9 +105,17 @@ public class HelloController {
             participantResponseStatus.put(participant.getId(), status);
         }
         
+        // 日程集計結果を計算
+        Map<Long, Map<String, Object>> dateAggregationResults = calculateDateAggregation(event);
+        
+        // 最適日程を提案
+        Map<String, Object> optimalDateSuggestion = suggestOptimalDate(event, dateAggregationResults);
+        
         // テンプレートにイベントデータを渡す
         model.addAttribute("event", event);
         model.addAttribute("participantResponseStatus", participantResponseStatus);
+        model.addAttribute("dateAggregationResults", dateAggregationResults);
+        model.addAttribute("optimalDateSuggestion", optimalDateSuggestion);
         return "event-detail";
     }
 
@@ -317,6 +326,153 @@ public class HelloController {
         status.put("maybeCount", maybeCount);
         
         return status;
+    }
+
+    // 日程集計機能：各候補日程の回答を集計
+    private Map<Long, Map<String, Object>> calculateDateAggregation(Event event) {
+        Map<Long, Map<String, Object>> aggregationResults = new HashMap<>();
+        
+        for (EventDate eventDate : event.getEventDates()) {
+            Map<String, Object> dateStats = new HashMap<>();
+            
+            // 回答カウント
+            int okCount = 0;
+            int maybeCount = 0;
+            int ngCount = 0;
+            int noResponseCount = 0;
+            
+            // 参加者名リスト
+            List<String> okParticipants = new ArrayList<>();
+            List<String> maybeParticipants = new ArrayList<>();
+            List<String> ngParticipants = new ArrayList<>();
+            List<String> noResponseParticipants = new ArrayList<>();
+            
+            // 全参加者をチェック
+            for (Participant participant : event.getParticipants()) {
+                Response response = findResponseForEventDate(participant, eventDate);
+                
+                if (response != null) {
+                    switch (response.getResponseType()) {
+                        case OK:
+                            okCount++;
+                            okParticipants.add(participant.getName());
+                            break;
+                        case MAYBE:
+                            maybeCount++;
+                            maybeParticipants.add(participant.getName());
+                            break;
+                        case NG:
+                            ngCount++;
+                            ngParticipants.add(participant.getName());
+                            break;
+                    }
+                } else {
+                    noResponseCount++;
+                    noResponseParticipants.add(participant.getName());
+                }
+            }
+            
+            // 統計計算
+            int totalParticipants = event.getParticipants().size();
+            int responseCount = okCount + maybeCount + ngCount;
+            int potentialParticipants = okCount + maybeCount; // 参加可能者数（○+△）
+            
+            double responseRate = totalParticipants > 0 ? (double) responseCount / totalParticipants * 100 : 0;
+            double participationRate = totalParticipants > 0 ? (double) potentialParticipants / totalParticipants * 100 : 0;
+            
+            // 結果をマップに格納
+            dateStats.put("okCount", okCount);
+            dateStats.put("maybeCount", maybeCount);
+            dateStats.put("ngCount", ngCount);
+            dateStats.put("noResponseCount", noResponseCount);
+            dateStats.put("totalParticipants", totalParticipants);
+            dateStats.put("responseCount", responseCount);
+            dateStats.put("potentialParticipants", potentialParticipants);
+            dateStats.put("responseRate", Math.round(responseRate));
+            dateStats.put("participationRate", Math.round(participationRate));
+            
+            dateStats.put("okParticipants", okParticipants);
+            dateStats.put("maybeParticipants", maybeParticipants);
+            dateStats.put("ngParticipants", ngParticipants);
+            dateStats.put("noResponseParticipants", noResponseParticipants);
+            
+            aggregationResults.put(eventDate.getId(), dateStats);
+        }
+        
+        return aggregationResults;
+    }
+    
+    // 最適日程提案機能
+    private Map<String, Object> suggestOptimalDate(Event event, Map<Long, Map<String, Object>> aggregationResults) {
+        Map<String, Object> suggestion = new HashMap<>();
+        
+        if (event.getEventDates().isEmpty() || aggregationResults.isEmpty()) {
+            suggestion.put("hasOptimalDate", false);
+            suggestion.put("message", "候補日程がありません");
+            return suggestion;
+        }
+        
+        EventDate optimalDate = null;
+        Map<String, Object> optimalStats = null;
+        int maxOkCount = -1;
+        int maxPotentialParticipants = -1;
+        
+        // 最適日程を探す（○の数 → ○+△の数 → 日付の早い順）
+        for (EventDate eventDate : event.getEventDates()) {
+            Map<String, Object> stats = aggregationResults.get(eventDate.getId());
+            int okCount = (Integer) stats.get("okCount");
+            int potentialParticipants = (Integer) stats.get("potentialParticipants");
+            
+            boolean isCurrentBetter = false;
+            
+            if (okCount > maxOkCount) {
+                isCurrentBetter = true;
+            } else if (okCount == maxOkCount && potentialParticipants > maxPotentialParticipants) {
+                isCurrentBetter = true;
+            } else if (okCount == maxOkCount && potentialParticipants == maxPotentialParticipants) {
+                // 同じ条件なら日付の早い方を選択
+                if (optimalDate == null || eventDate.getCandidateDate().isBefore(optimalDate.getCandidateDate())) {
+                    isCurrentBetter = true;
+                }
+            }
+            
+            if (isCurrentBetter) {
+                optimalDate = eventDate;
+                optimalStats = stats;
+                maxOkCount = okCount;
+                maxPotentialParticipants = potentialParticipants;
+            }
+        }
+        
+        if (optimalDate != null) {
+            suggestion.put("hasOptimalDate", true);
+            suggestion.put("optimalDate", optimalDate);
+            suggestion.put("optimalStats", optimalStats);
+            
+            // 提案メッセージを生成
+            String message = String.format("最適日程: %s（○%d人 △%d人 - 参加可能率%d%%）",
+                optimalDate.getCandidateDate(),
+                (Integer) optimalStats.get("okCount"),
+                (Integer) optimalStats.get("maybeCount"),
+                ((Number) optimalStats.get("participationRate")).intValue()
+            );
+            suggestion.put("message", message);
+        } else {
+            suggestion.put("hasOptimalDate", false);
+            suggestion.put("message", "最適日程を特定できませんでした");
+        }
+        
+        return suggestion;
+    }
+    
+    // ヘルパーメソッド：参加者の特定の候補日程への回答を取得
+    private Response findResponseForEventDate(Participant participant, EventDate eventDate) {
+        for (Response response : participant.getResponses()) {
+            if (response.getEventDate().getId().equals(eventDate.getId())) {
+                return response;
+            }
+        }
+        return null;
     }
 
     // テスト用：データベーステーブル確認

@@ -250,8 +250,35 @@
                     <span class="date-day" th:text="'(' + ${#temporals.format(eventDate.candidateDate, 'E')} + ')'">（月）</span>
                 </div>
                 <div class="response-summary">
-                    <!-- 将来的に回答状況を表示する場所 -->
-                    <span style="color: #999;">回答待ち</span>
+                    <!-- 日程集計結果を表示 -->
+                    <div th:with="stats=${dateAggregationResults[eventDate.id]}">
+                        <div th:if="${stats != null and stats.totalParticipants > 0}">
+                            <div class="response-counts">
+                                <span class="ok-count">○<span th:text="${stats.okCount}">0</span>人</span>
+                                <span class="maybe-count">△<span th:text="${stats.maybeCount}">0</span>人</span>
+                                <span class="ng-count">×<span th:text="${stats.ngCount}">0</span>人</span>
+                                <span class="participation-rate">（参加可能率: <span th:text="${stats.participationRate}">0</span>%）</span>
+                            </div>
+                            
+                            <!-- 参加者名詳細（○の人） -->
+                            <div th:if="${!stats.okParticipants.empty}" class="participant-details ok-details">
+                                ○ <span th:text="${#strings.listJoin(stats.okParticipants, '、')}">参加者名</span>
+                            </div>
+                            
+                            <!-- 参加者名詳細（△の人） -->
+                            <div th:if="${!stats.maybeParticipants.empty}" class="participant-details maybe-details">
+                                △ <span th:text="${#strings.listJoin(stats.maybeParticipants, '、')}">参加者名</span>
+                            </div>
+                            
+                            <!-- 参加者名詳細（×の人） -->
+                            <div th:if="${!stats.ngParticipants.empty}" class="participant-details ng-details">
+                                × <span th:text="${#strings.listJoin(stats.ngParticipants, '、')}">参加者名</span>
+                            </div>
+                        </div>
+                        <div th:if="${stats == null or stats.totalParticipants == 0}">
+                            <span style="color: #999;">回答待ち</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

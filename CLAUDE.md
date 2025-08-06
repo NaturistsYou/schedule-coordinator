@@ -70,7 +70,7 @@ NaturistsYou.coordinator/
 ## Development Guidelines
 
 ### Documentation Output
-- New documentation should be output to: `work/lacal obsidian/dev obsidian`
+- New documentation should be output to: `/Users/tatsunoriyusa/work/local obsidian/dev obsidian`
 
 ### Database Configuration
 - Uses H2 in-memory database for development
@@ -91,3 +91,8 @@ NaturistsYou.coordinator/
 - Japanese language support (UTF-8 encoding)
 - Entity relationships properly mapped with cascade operations
 - Controller includes test endpoint for database verification
+
+## Logging Configuration
+Default log file: /Users/tatsunoriyusa/work/local obsidian/dev obsidian/claude-code-session-log.md
+
+When logging sessions, always append to this file with timestamp and session details.
