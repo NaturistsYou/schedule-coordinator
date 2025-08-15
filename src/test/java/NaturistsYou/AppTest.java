@@ -1,38 +1,30 @@
 package NaturistsYou;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
+import org.springframework.boot.test.context.SpringBootTest;
 
 /**
- * Unit test for simple App.
+ * Unit test for Spring Boot Application.
  */
-public class AppTest 
-    extends TestCase
-{
+@SpringBootTest
+public class AppTest {
+    
     /**
-     * Create the test case
-     *
-     * @param testName name of the test case
+     * Test that the application context loads successfully.
      */
-    public AppTest( String testName )
-    {
-        super( testName );
+    @Test
+    public void contextLoads() {
+        // Spring Bootアプリケーションが正常に起動することをテスト
+        Assertions.assertTrue(true);
     }
-
+    
     /**
-     * @return the suite of tests being tested
+     * Basic application test.
      */
-    public static Test suite()
-    {
-        return new TestSuite( AppTest.class );
-    }
-
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-        assertTrue( true );
+    @Test
+    public void testApp() {
+        // 基本的なアプリケーションテスト
+        Assertions.assertTrue(true);
     }
 }

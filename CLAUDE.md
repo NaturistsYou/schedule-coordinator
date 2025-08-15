@@ -10,6 +10,9 @@ Schedule Coordinator (日程調整アプリ) - A Spring Boot web application for
 
 ### Maven Commands
 ```bash
+# Setup Maven PATH (IntelliJ bundled Maven)
+export PATH="/Applications/IntelliJ IDEA CE.app/Contents/plugins/maven/lib/maven3/bin:$PATH"
+
 # Build the project
 mvn clean compile
 
