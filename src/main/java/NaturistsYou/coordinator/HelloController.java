@@ -79,7 +79,30 @@ public class HelloController {
             }
         }
 
-        return "redirect:/events";
+        return "redirect:/events/" + savedEvent.getId() + "/created";
+    }
+
+    @GetMapping("/events/{id}/created")
+    public String showEventCreated(@PathVariable Long id, Model model, HttpServletRequest request) {
+        // データベースからIDに基づいてイベントを検索
+        Optional<Event> eventOpt = eventRepository.findById(id);
+        
+        // イベントが存在しない場合は404エラーを投げる
+        if (eventOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "イベントが見つかりません");
+        }
+        
+        // イベントを取得
+        Event event = eventOpt.get();
+        
+        // 招待URLを生成（現在のサーバーのベースURLを使用）
+        String baseUrl = request.getRequestURL().toString().replaceFirst("/events/.*", "");
+        String inviteUrl = baseUrl + "/events/" + id + "/participate";
+        
+        // テンプレートにイベントデータと招待URLを渡す
+        model.addAttribute("event", event);
+        model.addAttribute("inviteUrl", inviteUrl);
+        return "event-created";
     }
 
     @GetMapping("/events/{id}")

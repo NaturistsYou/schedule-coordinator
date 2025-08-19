@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>イベント作成完了</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .success-container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 48px;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        .event-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .success-message {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .invite-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 2px dashed #007bff;
+        }
+        .invite-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+        .url-container {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .invite-url {
+            flex: 1;
+            padding: 12px 15px;
+            font-family: monospace;
+            font-size: 14px;
+            background: white;
+            border: none;
+            outline: none;
+            color: #333;
+        }
+        .copy-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        .copy-btn:hover {
+            background: #0056b3;
+        }
+        .copy-btn.copied {
+            background: #28a745;
+        }
+        .invite-instruction {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .action-buttons {
+            margin-top: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 0 10px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+            color: white;
+            text-decoration: none;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+            color: white;
+            text-decoration: none;
+        }
+        @media (max-width: 600px) {
+            .url-container {
+                flex-direction: column;
+            }
+            .invite-url {
+                border-bottom: 1px solid #ddd;
+            }
+            .copy-btn {
+                width: 100%;
+            }
+            .btn {
+                display: block;
+                margin: 10px 0;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <!-- 成功アイコン -->
+        <div class="success-icon">✅</div>
+        
+        <!-- イベント情報 -->
+        <h1 class="event-title" th:text="${event.title}">イベントタイトル</h1>
+        <p class="success-message">イベントが正常に作成されました！</p>
+        
+        <!-- 招待URL セクション -->
+        <div class="invite-section">
+            <h2 class="invite-title">📤 参加者への招待URL</h2>
+            
+            <div class="url-container">
+                <input type="text" 
+                       class="invite-url" 
+                       id="inviteUrl" 
+                       th:value="${inviteUrl}" 
+                       readonly>
+                <button class="copy-btn" id="copyBtn" onclick="copyInviteUrl()">
+                    📋 コピー
+                </button>
+            </div>
+            
+            <div class="invite-instruction">
+                <strong>📱 使い方：</strong><br>
+                上記のURLをコピーして、LINEやメールで参加者に送信してください。<br>
+                参加者はこのURLから直接イベントに参加登録できます。
+            </div>
+        </div>
+        
+        <!-- アクション ボタン -->
+        <div class="action-buttons">
+            <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-primary">
+                📊 イベント管理画面へ
+            </a>
+            <a href="/events" class="btn btn-secondary">
+                📋 イベント一覧に戻る
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function copyInviteUrl() {
+            const urlInput = document.getElementById('inviteUrl');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            // URLをクリップボードにコピー
+            urlInput.select();
+            urlInput.setSelectionRange(0, 99999); // モバイル対応
+            
+            try {
+                document.execCommand('copy');
+                
+                // ボタンの表示を変更
+                copyBtn.textContent = '✅ コピー完了';
+                copyBtn.classList.add('copied');
+                
+                // 2秒後に元に戻す
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 コピー';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+                
+            } catch (err) {
+                alert('コピーに失敗しました。手動でURLを選択してコピーしてください。');
+            }
+        }
+        
+        // 現代的なClipboard APIを使用（対応ブラウザのみ）
+        if (navigator.clipboard) {
+            function copyInviteUrl() {
+                const urlInput = document.getElementById('inviteUrl');
+                const copyBtn = document.getElementById('copyBtn');
+                
+                navigator.clipboard.writeText(urlInput.value).then(() => {
+                    // ボタンの表示を変更
+                    copyBtn.textContent = '✅ コピー完了';
+                    copyBtn.classList.add('copied');
+                    
+                    // 2秒後に元に戻す
+                    setTimeout(() => {
+                        copyBtn.textContent = '📋 コピー';
+                        copyBtn.classList.remove('copied');
+                    }, 2000);
+                    
+                }).catch(err => {
+                    alert('コピーに失敗しました。手動でURLを選択してコピーしてください。');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
