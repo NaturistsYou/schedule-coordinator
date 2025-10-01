@@ -5,15 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>イベント一覧 - 日程調整アプリ</title>
     <style>
+        /* ダークテーマベース */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: #2c2c2c;
+            color: #ffffff;
+            line-height: 1.6;
         }
+        /* ヘッダースタイル - 明るいグレー */
         .header {
-            background-color: #007bff;
+            background-color: #3a3a3a;
             color: white;
             padding: 20px;
             border-radius: 8px;
@@ -27,17 +31,26 @@
             margin-bottom: 20px;
             text-align: center;
         }
+        /* ボタンスタイル */
         .btn {
-            background-color: #28a745;
+            background: #007bff;
             color: white;
-            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
             text-decoration: none;
-            border-radius: 4px;
             display: inline-block;
             margin: 5px;
         }
         .btn:hover {
-            background-color: #218838;
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+            text-decoration: none;
+            color: white;
         }
         .btn-primary {
             background-color: #007bff;
@@ -45,13 +58,14 @@
         .btn-primary:hover {
             background-color: #0056b3;
         }
+        /* カードデザイン */
         .event-card {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: #ffffff;
+            color: #333333;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin: 16px 0;
         }
         .event-title {
             font-size: 1.2em;
@@ -91,16 +105,16 @@
 </head>
 <body>
     <div class="header">
-        <h1>📅 日程調整アプリ</h1>
+        <h1>日程調整アプリ</h1>
         <p>イベント一覧</p>
     </div>
 
     <div class="actions">
-        <a href="/events/new" class="btn">➕ 新しいイベントを作成</a>
+        <a href="/events/new" class="btn">新しいイベントを作成</a>
     </div>
 
     <div th:if="${events.empty}" class="no-events">
-        <h3>📭 登録されたイベントがありません</h3>
+        <h3>登録されたイベントがありません</h3>
         <p>上のボタンから新しいイベントを作成してください。</p>
     </div>
 
@@ -128,17 +142,17 @@
             
             <div class="event-actions">
                 <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-primary btn-small">
-                    📋 詳細を見る
+                    詳細を見る
                 </a>
                 <a th:href="@{/events/{id}/participate(id=${event.id})}" class="btn btn-small">
-                    ✋ 参加登録
+                    参加登録
                 </a>
             </div>
         </div>
     </div>
 
     <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
-        <a href="/" class="btn btn-primary">🏠 ホームに戻る</a>
+        <a href="/" class="btn btn-primary">ページ上部に戻る</a>
     </div>
 </body>
 </html>

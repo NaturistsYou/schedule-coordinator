@@ -5,15 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="'参加登録 - ' + ${event.title} + ' - 日程調整アプリ'">参加登録 - 日程調整アプリ</title>
     <style>
+        /* ダークテーマベース */
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: #2c2c2c;
+            color: #ffffff;
+            line-height: 1.6;
         }
         .header {
-            background-color: #007bff;
+            background-color: #3a3a3a;
             color: white;
             padding: 20px;
             border-radius: 8px;
@@ -34,13 +37,14 @@
         .back-link a:hover {
             text-decoration: underline;
         }
+        /* カードデザイン */
         .event-info-card {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: #ffffff;
+            color: #333333;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin: 16px 0;
         }
         .event-title {
             font-size: 1.3em;
@@ -55,12 +59,12 @@
             margin-bottom: 8px;
         }
         .form-card {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: #ffffff;
+            color: #333333;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin: 16px 0;
         }
         .form-title {
             font-size: 1.2em;
@@ -79,15 +83,27 @@
             font-weight: bold;
             color: #333;
         }
+        /* 必須バッジ */
+        .required-badge {
+            background: #ffd700;
+            color: #333;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
         .required {
             color: #dc3545;
         }
+        /* 入力フィールド */
         input[type="text"] {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 16px;
             width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 1em;
             box-sizing: border-box;
             transition: border-color 0.3s;
         }
@@ -106,21 +122,26 @@
             text-align: center;
             margin-top: 30px;
         }
+        /* ボタンスタイル */
         .btn {
-            background-color: #28a745;
+            background: #007bff;
             color: white;
-            padding: 12px 30px;
-            text-decoration: none;
             border: none;
-            border-radius: 6px;
-            font-size: 1em;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
             cursor: pointer;
-            margin: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
             display: inline-block;
-            transition: background-color 0.3s;
+            margin: 5px;
         }
         .btn:hover {
-            background-color: #218838;
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+            text-decoration: none;
+            color: white;
         }
         .btn-secondary {
             background-color: #6c757d;
@@ -233,7 +254,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>📅 日程調整アプリ</h1>
+        <h1>日程調整アプリ</h1>
         <p>参加登録</p>
     </div>
 
@@ -246,17 +267,17 @@
         <div class="event-title" th:text="${event.title}">イベント名</div>
         
         <div class="event-meta">
-            <strong>📅 作成日:</strong> 
+            <strong>作成日:</strong>
             <span th:text="${#temporals.format(event.createdAt, 'yyyy年MM月dd日 HH:mm')}">2025-07-28 10:00</span>
         </div>
-        
+
         <div class="event-meta">
-            <strong>👥 現在の参加者数:</strong> 
+            <strong>現在の参加者数:</strong>
             <span th:text="${event.participants.size()}">0</span>人
         </div>
 
         <div class="candidate-dates-preview" th:if="${!event.eventDates.empty}">
-            <strong>🗓️ 候補日程:</strong><br>
+            <strong>候補日程:</strong><br>
             <span th:each="eventDate : ${event.eventDates}" class="date-badge" 
                   th:text="${#temporals.format(eventDate.candidateDate, 'MM月dd日(E)')}">
                 07月29日(月)
@@ -266,13 +287,13 @@
 
     <!-- 参加登録＋日程回答フォーム -->
     <div class="form-card">
-        <div class="form-title">✋ 参加登録＋日程回答フォーム</div>
+        <div class="form-title">参加登録＋日程回答フォーム</div>
         
         <form th:action="@{/events/{id}/participate(id=${event.id})}" method="post">
             <!-- 参加者名入力 -->
             <div class="form-group">
                 <label for="participantName">
-                    参加者名 <span class="required">*</span>
+                    <span class="required-badge">必須</span>参加者名
                 </label>
                 <input type="text" 
                        id="participantName" 
@@ -288,12 +309,12 @@
             <!-- 日程回答セクション -->
             <div class="form-group" style="margin-top: 30px;">
                 <div class="section-title" style="font-size: 1.1em; font-weight: bold; margin-bottom: 20px; border-left: 4px solid #28a745; padding-left: 10px;">
-                    📝 各候補日程への回答
+                    各候補日程への回答
                 </div>
                 
                 <div th:each="eventDate : ${event.eventDates}" class="date-response-item">
                     <div class="date-header">
-                        📅 <span th:text="${#temporals.format(eventDate.candidateDate, 'yyyy年MM月dd日')}">2025年07月29日</span>
+                        <span th:text="${#temporals.format(eventDate.candidateDate, 'yyyy年MM月dd日')}">2025年07月29日</span>
                         <span th:text="'(' + ${#temporals.format(eventDate.candidateDate, 'E')} + ')'">（月）</span>
                     </div>
                     
@@ -338,7 +359,7 @@
 
             <div class="actions">
                 <button type="submit" class="btn">
-                    💾 参加登録＋回答を完了する
+                    参加登録＋回答を完了する
                 </button>
                 <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-secondary">
                     キャンセル

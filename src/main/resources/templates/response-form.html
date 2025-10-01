@@ -5,15 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="'日程回答 - ' + ${event.title} + ' - 日程調整アプリ'">日程回答 - 日程調整アプリ</title>
     <style>
+        /* ダークテーマベース */
         body {
-            font-family: Arial, sans-serif;
-            max-width: 700px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: #2c2c2c;
+            color: #ffffff;
+            line-height: 1.6;
         }
         .header {
-            background-color: #007bff;
+            background-color: #3a3a3a;
             color: white;
             padding: 20px;
             border-radius: 8px;
@@ -35,25 +38,26 @@
             text-decoration: underline;
         }
         .participant-info {
-            background-color: #e3f2fd;
-            border: 1px solid #90caf9;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 20px;
+            background: #ffffff;
+            color: #333333;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin: 16px 0;
             text-align: center;
         }
         .participant-name {
             font-weight: bold;
-            color: #1976d2;
+            color: #007bff;
             font-size: 1.1em;
         }
         .event-info-card {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: #ffffff;
+            color: #333333;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin: 16px 0;
         }
         .event-title {
             font-size: 1.3em;
@@ -64,12 +68,12 @@
             padding-bottom: 10px;
         }
         .form-card {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: #ffffff;
+            color: #333333;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin: 16px 0;
         }
         .form-title {
             font-size: 1.2em;
@@ -154,26 +158,32 @@
             margin-top: 30px;
         }
         .btn {
-            background-color: #28a745;
+            background: #007bff;
             color: white;
-            padding: 12px 30px;
-            text-decoration: none;
             border: none;
-            border-radius: 6px;
-            font-size: 1em;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
             cursor: pointer;
-            margin: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
             display: inline-block;
-            transition: background-color 0.3s;
+            margin: 5px;
         }
         .btn:hover {
-            background-color: #218838;
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+            text-decoration: none;
+            color: white;
         }
         .btn-secondary {
             background-color: #6c757d;
         }
         .btn-secondary:hover {
             background-color: #545b62;
+            color: white;
+            text-decoration: none;
         }
         .reminder-note {
             background-color: #fff3cd;
@@ -190,7 +200,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>📅 日程調整アプリ</h1>
+        <h1>日程調整アプリ</h1>
         <p>日程回答フォーム</p>
     </div>
 
@@ -208,26 +218,26 @@
         <div class="event-title" th:text="${event.title}">イベント名</div>
         
         <div>
-            <strong>📅 作成日:</strong> 
+            <strong>作成日:</strong>
             <span th:text="${#temporals.format(event.createdAt, 'yyyy年MM月dd日 HH:mm')}">2025-07-28 10:00</span>
         </div>
     </div>
 
     <!-- 将来のリマインド機能についての案内 -->
     <div class="reminder-note">
-        <strong>💡 お知らせ:</strong> 「△（未定）」で回答いただいた場合、決定が近づいたタイミングでリマインド通知をお送りする予定です。
+        <strong>お知らせ:</strong> 「△（未定）」で回答いただいた場合、決定が近づいたタイミングでリマインド通知をお送りする予定です。
         理由欄にご事情を記載いただくと、より適切な通知タイミングでご連絡できます。
     </div>
 
     <!-- 日程回答フォーム -->
     <div class="form-card">
-        <div class="form-title">📝 各候補日程への回答</div>
+        <div class="form-title">各候補日程への回答</div>
         
         <form th:action="@{/events/{eventId}/participants/{participantId}/responses(eventId=${event.id}, participantId=${participant.id})}" method="post">
             
             <div th:each="eventDate : ${event.eventDates}" class="date-response-item">
                 <div class="date-header">
-                    📅 <span th:text="${#temporals.format(eventDate.candidateDate, 'yyyy年MM月dd日')}">2025年07月29日</span>
+                    <span th:text="${#temporals.format(eventDate.candidateDate, 'yyyy年MM月dd日')}">2025年07月29日</span>
                     <span th:text="'(' + ${#temporals.format(eventDate.candidateDate, 'E')} + ')'">（月）</span>
                 </div>
                 
@@ -275,7 +285,7 @@
 
             <div class="actions">
                 <button type="submit" class="btn">
-                    💾 回答を保存する
+                    回答を保存する
                 </button>
                 <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-secondary">
                     キャンセル

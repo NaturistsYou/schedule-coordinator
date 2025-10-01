@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 /**
  * Unit test for Spring Boot Application.
  */
-@SpringBootTest
+@SpringBootTest(classes = NaturistsYou.coordinator.ScheduleCoordinatorApplication.class)
 public class AppTest {
     
     /**

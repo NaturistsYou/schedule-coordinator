@@ -5,18 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>イベント作成完了</title>
     <style>
+        /* ダークテーマベース */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f8f9fa;
+            background-color: #2c2c2c;
+            color: #ffffff;
+            line-height: 1.6;
         }
-        .success-container {
-            background: white;
+        /* ヘッダースタイル - 明るいグレー */
+        .header {
+            background-color: #3a3a3a;
+            color: white;
+            padding: 20px;
             border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        /* カードデザイン */
+        .success-container {
+            background: #ffffff;
+            color: #333333;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin: 16px 0;
             text-align: center;
         }
         .success-icon {
@@ -67,6 +85,7 @@
             outline: none;
             color: #333;
         }
+        /* コピーボタン */
         .copy-btn {
             background: #007bff;
             color: white;
@@ -74,10 +93,13 @@
             padding: 12px 20px;
             cursor: pointer;
             font-size: 14px;
-            transition: background-color 0.2s;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s ease;
         }
         .copy-btn:hover {
             background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
         }
         .copy-btn.copied {
             background: #28a745;
@@ -90,14 +112,26 @@
         .action-buttons {
             margin-top: 30px;
         }
+        /* ボタンスタイル */
         .btn {
-            display: inline-block;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
             padding: 12px 24px;
-            margin: 0 10px;
-            text-decoration: none;
-            border-radius: 4px;
             font-size: 16px;
-            transition: all 0.2s;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0 10px;
+        }
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+            text-decoration: none;
+            color: white;
         }
         .btn-primary {
             background: #007bff;
@@ -136,6 +170,11 @@
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>日程調整アプリ</h1>
+        <p>イベント作成完了</p>
+    </div>
+
     <div class="success-container">
         <!-- 成功アイコン -->
         <div class="success-icon">✅</div>
@@ -146,7 +185,7 @@
         
         <!-- 招待URL セクション -->
         <div class="invite-section">
-            <h2 class="invite-title">📤 参加者への招待URL</h2>
+            <h2 class="invite-title">参加者への招待URL</h2>
             
             <div class="url-container">
                 <input type="text" 
@@ -155,12 +194,12 @@
                        th:value="${inviteUrl}" 
                        readonly>
                 <button class="copy-btn" id="copyBtn" onclick="copyInviteUrl()">
-                    📋 コピー
+                    コピー
                 </button>
             </div>
             
             <div class="invite-instruction">
-                <strong>📱 使い方：</strong><br>
+                <strong>使い方：</strong><br>
                 上記のURLをコピーして、LINEやメールで参加者に送信してください。<br>
                 参加者はこのURLから直接イベントに参加登録できます。
             </div>
@@ -169,10 +208,10 @@
         <!-- アクション ボタン -->
         <div class="action-buttons">
             <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-primary">
-                📊 イベント管理画面へ
+                イベント管理画面へ
             </a>
             <a href="/events" class="btn btn-secondary">
-                📋 イベント一覧に戻る
+                イベント一覧に戻る
             </a>
         </div>
     </div>
@@ -195,7 +234,7 @@
                 
                 // 2秒後に元に戻す
                 setTimeout(() => {
-                    copyBtn.textContent = '📋 コピー';
+                    copyBtn.textContent = 'コピー';
                     copyBtn.classList.remove('copied');
                 }, 2000);
                 
@@ -217,7 +256,7 @@
                     
                     // 2秒後に元に戻す
                     setTimeout(() => {
-                        copyBtn.textContent = '📋 コピー';
+                        copyBtn.textContent = 'コピー';
                         copyBtn.classList.remove('copied');
                     }, 2000);
                     
