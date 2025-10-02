@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.ui.Model;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -35,9 +39,20 @@ public class HelloController {
     private ResponseRepository responseRepository;
 
     @GetMapping("/events")
-    public String showEventList(Model model) {
-        List<Event> events = eventRepository.findAll();
-        model.addAttribute("events", events);
+    public String showEventList(
+            @RequestParam(defaultValue = "0") int page,
+            Model model) {
+        // 1ページ5件でページネーション（ソートはクエリ内で実施）
+        Pageable pageable = PageRequest.of(page, 5);
+        // 今日以降の候補日を持つイベントのみ取得（過去のイベントは除外）
+        Page<Event> eventPage = eventRepository.findActiveEvents(LocalDate.now(), pageable);
+
+        model.addAttribute("eventPage", eventPage);
+        model.addAttribute("events", eventPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", eventPage.getTotalPages());
+        model.addAttribute("totalItems", eventPage.getTotalElements());
+
         return "event-list";
     }
 

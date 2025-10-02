@@ -101,11 +101,45 @@
             padding: 5px 10px;
             font-size: 0.9em;
         }
+        /* ページネーションスタイル */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+            gap: 10px;
+        }
+        .pagination a, .pagination span {
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #ffffff;
+            background-color: #3a3a3a;
+            transition: all 0.3s ease;
+        }
+        .pagination a:hover {
+            background-color: #007bff;
+            transform: translateY(-2px);
+        }
+        .pagination .current {
+            background-color: #007bff;
+            font-weight: bold;
+        }
+        .pagination .disabled {
+            background-color: #1a1a1a;
+            color: #666;
+            cursor: not-allowed;
+        }
+        .page-info {
+            text-align: center;
+            color: #999;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>日程調整アプリ</h1>
+        <h1>日程調整アプリ（仮）</h1>
         <p>イベント一覧</p>
     </div>
 
@@ -119,6 +153,13 @@
     </div>
 
     <div th:if="${!events.empty}">
+        <!-- ページ情報表示 -->
+        <div class="page-info">
+            全 <span th:text="${totalItems}">0</span> 件中
+            <span th:text="${currentPage * 5 + 1}">1</span> -
+            <span th:text="${currentPage * 5 + events.size()}">5</span> 件を表示
+        </div>
+
         <div th:each="event : ${events}" class="event-card">
             <div class="event-title" th:text="${event.title}">イベント名</div>
             
@@ -149,9 +190,35 @@
                 </a>
             </div>
         </div>
+
+        <!-- ページネーション -->
+        <div class="pagination" th:if="${totalPages > 1}">
+            <!-- 前へボタン -->
+            <a th:if="${currentPage > 0}"
+               th:href="@{/events(page=${currentPage - 1})}"
+               class="pagination-btn">« 前へ</a>
+            <span th:unless="${currentPage > 0}" class="pagination-btn disabled">« 前へ</span>
+
+            <!-- ページ番号 -->
+            <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                <!-- 現在のページの前後2ページのみ表示 -->
+                <a th:if="${i >= currentPage - 2 && i <= currentPage + 2 && i != currentPage}"
+                   th:href="@{/events(page=${i})}"
+                   th:text="${i + 1}">1</a>
+                <span th:if="${i >= currentPage - 2 && i <= currentPage + 2 && i == currentPage}"
+                      class="current"
+                      th:text="${i + 1}">1</span>
+            </th:block>
+
+            <!-- 次へボタン -->
+            <a th:if="${currentPage < totalPages - 1}"
+               th:href="@{/events(page=${currentPage + 1})}"
+               class="pagination-btn">次へ »</a>
+            <span th:unless="${currentPage < totalPages - 1}" class="pagination-btn disabled">次へ »</span>
+        </div>
     </div>
 
-    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #555;">
         <a href="/" class="btn btn-primary">ページ上部に戻る</a>
     </div>
 </body>
