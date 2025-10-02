@@ -1,4 +1,4 @@
-package NaturistsYou.coordinator;
+package NaturistsYou.coordinator.entity;
 
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonManagedReference;

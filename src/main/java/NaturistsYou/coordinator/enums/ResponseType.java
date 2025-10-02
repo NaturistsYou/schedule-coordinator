@@ -1,4 +1,4 @@
-package NaturistsYou.coordinator;
+package NaturistsYou.coordinator.enums;
 
 public enum ResponseType {
     OK("参加可能", "○"),

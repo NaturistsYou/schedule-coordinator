@@ -1,5 +1,6 @@
-package NaturistsYou.coordinator;
+package NaturistsYou.coordinator.entity;
 
+import NaturistsYou.coordinator.enums.ResponseType;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import java.time.LocalDateTime;
