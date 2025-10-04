@@ -101,6 +101,18 @@
             padding: 5px 10px;
             font-size: 0.9em;
         }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
         /* ページネーションスタイル */
         .pagination {
             display: flex;
@@ -188,6 +200,15 @@
                 <a th:href="@{/events/{id}/participate(id=${event.id})}" class="btn btn-small">
                     参加登録
                 </a>
+                <a th:href="@{/events/{id}/edit(id=${event.id})}" class="btn btn-success btn-small">
+                    編集
+                </a>
+                <form th:action="@{/events/{id}/delete(id=${event.id})}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger btn-small"
+                            onclick="return confirm('本当に削除しますか？\n\nこのイベントに紐づく候補日程、参加者、回答もすべて削除されます。');">
+                        削除
+                    </button>
+                </form>
             </div>
         </div>
 

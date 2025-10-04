@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>イベント編集</title>
+    <style>
+        /* ダークテーマベース */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #2c2c2c;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        /* ヘッダースタイル - 明るいグレー */
+        .header {
+            background-color: #3a3a3a;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+        }
+
+        /* カードデザイン */
+        .form-card {
+            background: #ffffff;
+            color: #333333;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin: 16px 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        /* 入力フィールド */
+        input[type="text"], input[type="date"] {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, input[type="date"]:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        .date-input {
+            margin-bottom: 10px;
+        }
+        /* 既存の候補日程リスト */
+        .existing-dates {
+            margin-bottom: 20px;
+        }
+        .date-checkbox-container {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .date-checkbox-container:hover {
+            border-color: #007bff;
+            background: #e9f4ff;
+        }
+        .date-checkbox-container input[type="checkbox"] {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .date-checkbox-container label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+            flex: 1;
+        }
+        /* クリック可能な日付入力コンテナ */
+        .date-input-container {
+            position: relative;
+            cursor: pointer;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .date-input-container:hover {
+            border-color: #007bff;
+            background: #e9f4ff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+        }
+        .date-input-container input[type="date"] {
+            border: none;
+            background: transparent;
+            padding: 4px 8px;
+            margin: 0;
+            width: 100%;
+        }
+        .date-input-container input[type="date"]:focus {
+            border: none;
+            outline: none;
+        }
+        .date-input-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 2px;
+        }
+        /* ボタンスタイル */
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+        }
+        .add-date-btn {
+            background-color: #28a745;
+            margin-top: 5px;
+        }
+        .add-date-btn:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+        }
+
+        /* 必須バッジ */
+        .required-badge {
+            background: #ffd700;
+            color: #333;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        /* セクション区切り */
+        .section-divider {
+            border-top: 2px solid #e0e0e0;
+            margin: 20px 0;
+        }
+
+        .section-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .help-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>日程調整アプリ</h1>
+        <p>イベントを編集</p>
+    </div>
+
+    <div class="form-card">
+
+<form th:action="@{/events/{id}(id=${event.id})}" method="post">
+    <div class="form-group">
+        <label for="title"><span class="required-badge">必須</span>イベント名:</label>
+        <input type="text" id="title" name="title" th:value="${event.title}" required
+               placeholder="例：12月忘年会">
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 既存の候補日程 -->
+    <div class="form-group existing-dates">
+        <div class="section-title">既存の候補日程</div>
+        <div class="help-text">削除したい日程のチェックを外してください</div>
+        <div th:if="${event.eventDates.isEmpty()}">
+            <p style="color: #999;">候補日程がありません</p>
+        </div>
+        <div th:each="eventDate : ${event.eventDates}" class="date-checkbox-container">
+            <input type="checkbox"
+                   th:id="'existing-date-' + ${eventDate.id}"
+                   name="existingDateIds"
+                   th:value="${eventDate.id}"
+                   checked>
+            <label th:for="'existing-date-' + ${eventDate.id}">
+                <span th:text="${#temporals.format(eventDate.candidateDate, 'yyyy年MM月dd日 (E)')}"></span>
+                <span style="color: #999; font-size: 0.8em; margin-left: 8px;" th:text="'(ID: ' + ${eventDate.id} + ')'"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 新しい候補日程を追加 -->
+    <div class="form-group">
+        <div class="section-title">新しい候補日程を追加</div>
+        <div class="help-text">必要に応じて新しい候補日を追加できます</div>
+        <div id="date-inputs">
+            <!-- 初期状態では空 -->
+        </div>
+        <button type="button" onclick="addDateInput()" class="add-date-btn">
+            候補日を追加
+        </button>
+    </div>
+
+    <div class="form-group">
+        <button type="submit">更新する</button>
+    </div>
+</form>
+
+<br>
+<a th:href="@{/events/{id}(id=${event.id})}" style="color: #007bff; text-decoration: none;">← イベント詳細に戻る</a>
+</div>
+
+<script>
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
+
+    let dateInputCounter = 0;
+
+    function addDateInput() {
+        const dateInputs = document.getElementById('date-inputs');
+        dateInputCounter++;
+
+        // 新しいコンテナを作成
+        const newContainer = document.createElement('div');
+        newContainer.className = 'date-input-container';
+        newContainer.setAttribute('onclick', 'focusDateInput(this)');
+
+        // ラベルを作成
+        const label = document.createElement('div');
+        label.className = 'date-input-label';
+        label.textContent = `新しい候補日 ${dateInputCounter}`;
+
+        // 日付入力フィールドを作成
+        const newInput = document.createElement('input');
+        newInput.type = 'date';
+        newInput.name = 'candidateDates';
+        newInput.className = 'date-input';
+        newInput.setAttribute('min', today);
+
+        // コンテナに追加
+        newContainer.appendChild(label);
+        newContainer.appendChild(newInput);
+        dateInputs.appendChild(newContainer);
+    }
+
+    // コンテナクリック時に日付入力にフォーカス
+    function focusDateInput(container) {
+        const dateInput = container.querySelector('input[type="date"]');
+        if (dateInput) {
+            dateInput.focus();
+            // 日付ピッカーを開く（ブラウザによって動作が異なる場合がある）
+            dateInput.showPicker && dateInput.showPicker();
+        }
+    }
+</script>
+</body>
+</html>

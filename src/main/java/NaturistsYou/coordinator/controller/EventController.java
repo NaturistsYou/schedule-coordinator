@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -521,6 +522,124 @@ public class EventController {
             }
         }
         return null;
+    }
+
+    @GetMapping("/events/{id}/edit")
+    public String showEditForm(@PathVariable Long id, Model model) {
+        // データベースからIDに基づいてイベントを検索
+        Optional<Event> eventOpt = eventRepository.findById(id);
+
+        // イベントが存在しない場合は404エラーを投げる
+        if (eventOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "イベントが見つかりません");
+        }
+
+        // イベントを取得
+        Event event = eventOpt.get();
+
+        // 候補日程を日付順でソート
+        event.getEventDates().sort(Comparator.comparing(EventDate::getCandidateDate));
+
+        // テンプレートにイベントデータを渡す
+        model.addAttribute("event", event);
+        return "event-edit";
+    }
+
+    @PostMapping("/events/{id}")
+    @Transactional
+    public String updateEvent(@PathVariable Long id,
+                            @RequestParam String title,
+                            @RequestParam(required = false) List<String> candidateDates,
+                            @RequestParam(required = false) List<Long> existingDateIds) {
+
+        System.out.println("=== イベント更新処理開始 ===");
+        System.out.println("イベントID: " + id);
+        System.out.println("タイトル: " + title);
+        System.out.println("チェックされた既存日程ID: " + existingDateIds);
+        System.out.println("新規追加日程: " + candidateDates);
+
+        // データベースからIDに基づいてイベントを検索
+        Optional<Event> eventOpt = eventRepository.findById(id);
+
+        // イベントが存在しない場合は404エラーを投げる
+        if (eventOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "イベントが見つかりません");
+        }
+
+        Event event = eventOpt.get();
+
+        System.out.println("現在の候補日程数: " + event.getEventDates().size());
+        for (EventDate ed : event.getEventDates()) {
+            System.out.println("  - ID: " + ed.getId() + ", 日付: " + ed.getCandidateDate());
+        }
+
+        // イベントタイトルを更新
+        event.setTitle(title);
+        eventRepository.save(event);
+
+        // 削除対象のEventDateを特定して削除
+        List<Long> idsToDelete = new ArrayList<>();
+
+        if (existingDateIds != null && !existingDateIds.isEmpty()) {
+            // チェックされていない候補日程のIDを特定
+            for (EventDate eventDate : event.getEventDates()) {
+                if (!existingDateIds.contains(eventDate.getId())) {
+                    idsToDelete.add(eventDate.getId());
+                    System.out.println("削除対象: ID=" + eventDate.getId() + ", 日付=" + eventDate.getCandidateDate());
+                }
+            }
+        } else {
+            // existingDateIdsが空の場合、すべての既存候補日程を削除
+            System.out.println("チェックがすべて外されたため、全候補日程を削除します");
+            for (EventDate eventDate : event.getEventDates()) {
+                idsToDelete.add(eventDate.getId());
+                System.out.println("削除対象: ID=" + eventDate.getId() + ", 日付=" + eventDate.getCandidateDate());
+            }
+        }
+
+        // 削除を実行
+        for (Long idToDelete : idsToDelete) {
+            eventDateRepository.deleteById(idToDelete);
+            System.out.println("削除実行: ID=" + idToDelete);
+        }
+
+        // イベントエンティティのリレーションから削除されたEventDateを除去
+        event.getEventDates().removeIf(ed -> idsToDelete.contains(ed.getId()));
+        System.out.println("削除後の候補日程数: " + event.getEventDates().size());
+
+        // 新しい候補日程を追加
+        if (candidateDates != null) {
+            for (String dateStr : candidateDates) {
+                if (dateStr != null && !dateStr.trim().isEmpty()) {
+                    LocalDate date = LocalDate.parse(dateStr);
+                    EventDate eventDate = new EventDate(event, date);
+                    eventDateRepository.save(eventDate);
+                    eventDateRepository.flush();
+                    System.out.println("新規追加完了: " + date);
+                }
+            }
+        }
+
+        System.out.println("=== イベント更新処理完了 ===");
+
+        return "redirect:/events/" + id;
+    }
+
+    @PostMapping("/events/{id}/delete")
+    @Transactional
+    public String deleteEvent(@PathVariable Long id) {
+        // データベースからIDに基づいてイベントを検索
+        Optional<Event> eventOpt = eventRepository.findById(id);
+
+        // イベントが存在しない場合は404エラーを投げる
+        if (eventOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "イベントが見つかりません");
+        }
+
+        // イベントを削除（CascadeType.ALLにより関連データも自動削除される）
+        eventRepository.deleteById(id);
+
+        return "redirect:/events";
     }
 
     // テスト用：データベーステーブル確認
